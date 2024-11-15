@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { FlowiseClient } from "flowise-sdk";
@@ -13,6 +14,7 @@ export default function ChatDemo() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const handleSend = async (message: string) => {
     setIsLoading(true);
@@ -33,12 +35,17 @@ export default function ChatDemo() {
         chatflowId: "79f4ca9f-bd88-4896-829b-6772afcc2b56",
         overrideConfig: {
           systemMessage: "You are a helpful assistant",
+          ...(sessionId && { sessionId }),
         },
         question: message,
         streaming: false, // Cambiado a false ya que no usaremos streaming por ahora
       });
 
       console.log("Respuesta de Flowise:", response);
+
+      if (response.sessionId) {
+        setSessionId(response.sessionId);
+      }
 
       // Agregar mensaje del asistente
       const assistantMessageId = (Date.now() + 1).toString();
@@ -72,7 +79,7 @@ export default function ChatDemo() {
 
   const handleSubmit = async (
     event?: { preventDefault?: () => void },
-    ...rest: any[]
+    _options?: { experimental_attachments?: FileList }
   ) => {
     if (event?.preventDefault) {
       event.preventDefault();
@@ -85,7 +92,7 @@ export default function ChatDemo() {
   };
 
   return (
-    <div className='flex mx-auto h-screen w-[90%] py-10'>
+    <div className='flex mx-auto h-screen w-[90%] py-4'>
       <Chat
         messages={messages}
         input={input}
